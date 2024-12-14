@@ -128,29 +128,25 @@ def descubrir_celda(fila, columna, descubierto, matriz, puntaje):
     Calcula la fila y columna del tablero según las coordenadas del clic y la posición inicial del tablero (x_inicio, y_inicio).
 '''
 def manejar_clic(x, y, boton, matriz, banderas, y_inicio, x_inicio, game_over, descubierto, puntaje):
-    if game_over:
-        return game_over, puntaje 
     
-    fila, columna = (y - y_inicio) // TAM_CELDA, (x - x_inicio) // TAM_CELDA
-    if 0 <= fila < len(matriz) and 0 <= columna < len(matriz[0]):
-        if boton == 1:
-            if matriz[fila][columna] == -1:
-                game_over = True
-                mostrar_mensaje_perdida(pantalla, ANCHO, ALTO)
-            else: 
-                puntaje = descubrir_celda(fila, columna, descubierto, matriz, puntaje)
-        elif boton == 3:
-            if (fila, columna) in banderas:
-                banderas.remove((fila, columna))
-            else:
-                banderas.append((fila, columna))
+    if game_over == False:
+        
+        fila, columna = (y - y_inicio) // TAM_CELDA, (x - x_inicio) // TAM_CELDA
+        if 0 <= fila < len(matriz) and 0 <= columna < len(matriz[0]):
+            if boton == 1:
+                if matriz[fila][columna] == -1:
+                    game_over = True
+                    mostrar_mensaje_perdida(pantalla, ANCHO, ALTO)
+                else: 
+                    puntaje = descubrir_celda(fila, columna, descubierto, matriz, puntaje)
+            elif boton == 3:
+                if (fila, columna) in banderas:
+                    banderas.remove((fila, columna))
+                else:
+                    banderas.append((fila, columna))
     
     return game_over, puntaje
 
-
-def resetear_click():
-    global click_procesado
-    click_procesado = False
                 
 '''
     Dibuja y muestra el puntaje actual del jugador en la esquina superior izquierda de la pantalla.
@@ -271,12 +267,14 @@ def pedir_nombre(pantalla):
     Guarda la lista actualizada en el archivo puntajes.json.
 
 '''
+dato = ""
 
 def guardar_puntaje(nick, puntaje):
-    if nick and puntaje > 0:
+    if nick != "" and puntaje > 0:
         puntajes = cargar_puntajes()
         puntajes.append({"nick": nick, "puntaje": puntaje})
         puntajes = sorted(puntajes, key=lambda x: x["puntaje"], reverse=True)[:10]
+
         with open("puntajes.txt", "w") as archivo:
             for puntaje in puntajes:
                 archivo.write(f"{puntaje['nick']}: {puntaje['puntaje']}\n")
@@ -422,3 +420,131 @@ def mostrar_mensaje_victoria(pantalla, ancho, alto):
     
     pygame.display.flip()
     pygame.time.delay(3000)
+
+
+
+def main():
+    pygame.init()
+    ANCHO, ALTO = 800, 600
+    pantalla = pygame.display.set_mode((ANCHO, ALTO))
+    pygame.display.set_caption("Bianca_Gimenes_2_parcial")
+    
+
+    iconoMargenSuperior = pygame.image.load("Assets/png-transparent-utn-hd-logo.png")
+    pygame.display.set_icon(iconoMargenSuperior)
+    
+    imagen_fondo = pygame.image.load("Assets/clean2.jpg")
+    imagen_fondo = pygame.transform.scale(imagen_fondo, (ANCHO, ALTO))
+
+    en_juego = False
+    mostrar_niveles = False
+    matriz = []
+    descubierto = []
+    banderas = []
+    puntaje = 0
+    game_over = False
+    x_inicio, y_inicio = 0, 0
+
+    nivel = "FACIL"
+    config = niveles_config[nivel.upper()]
+
+
+    run = True
+    while run:
+        pantalla.blit(imagen_fondo, (0, 0))
+        
+        for evento in pygame.event.get():
+            if evento.type == pygame.QUIT:
+                run = False
+            
+            if evento.type == pygame.MOUSEBUTTONDOWN:
+                x, y = evento.pos 
+                
+               # print(f"Botón presionado: {evento.button}")
+                if en_juego and not game_over:
+                    
+                    game_over, puntaje = manejar_clic(x, y, evento.button, matriz, banderas, y_inicio, x_inicio, game_over, descubierto, puntaje)
+
+                    if verificar_victoria(matriz, descubierto):
+                         print("¡Victoria detectada!")
+                         mostrar_mensaje_victoria(pantalla, ANCHO, ALTO)
+                         guardar_puntaje(nick, puntaje)
+                         en_juego = False
+                                        
+                if en_juego:
+                    if 10 <= x <= 100 and 550 <= y <= 590:
+                        guardar_puntaje(nick, puntaje)
+                        nick = pedir_nombre(pantalla)
+                        config = niveles_config[nivel.upper()]
+                        filas, columnas, minas = config["filas"], config["columnas"], config["minas"]
+                        matriz = crear_matriz_aleatoria(filas, columnas, minas)
+                        mostrar_matriz(matriz)
+                        print("----------------------------")
+                        descubierto = [[False] * columnas for _ in range(filas)]
+                        banderas = []
+                        puntaje = 0
+                        game_over = False
+                
+                    elif 650 <= x <= 750 and 550 <= y <= 590:
+                        print("Botón 'Volver' presionado")
+                        guardar_puntaje(nick, puntaje) 
+                        en_juego = False
+                
+                elif mostrar_niveles:
+                    if 150 <= x <= 350:
+                        if 100 <= y <= 150:
+                            nivel = "FACIL"
+                            mostrar_niveles = False
+                        elif 200 <= y <= 250:
+                            nivel = "MEDIO"
+                            mostrar_niveles = False
+                        elif 300 <= y <= 350:
+                            nivel = "DIFICIL"
+                            mostrar_niveles = False
+                        elif 400 <= y <= 450:
+                            print("Botón 'Volver' presionado en niveles")
+                            mostrar_niveles = False
+              
+                
+                else:
+                    if 150 <= x <= 350:  # Verifica si el clic está en el rango de botones
+                        if 100 <= y <= 150:  # Botón "Niveles"
+                            mostrar_niveles = True
+                        elif 200 <= y <= 250:  # Botón "Jugar"
+                            nick = pedir_nombre(pantalla)
+                            en_juego = True
+                            config = niveles_config[nivel.upper()]
+                            filas, columnas, minas = config["filas"], config["columnas"], config["minas"]
+                            matriz = crear_matriz_aleatoria(filas, columnas, minas)
+                            mostrar_matriz(matriz)
+                            descubierto = [[False] * columnas for _ in range(filas)]
+                            banderas = []
+                            puntaje = 0
+                            game_over = False
+                            x_inicio, y_inicio = calcular_posicion_centrada(filas, columnas)
+                        elif 300 <= y <= 350:  # Botón "Ver Puntajes"
+                            mostrar_puntajes(pantalla, ANCHO, ALTO)
+                        elif 400 <= y <= 450:  # Botón "Salir"
+                            run = False
+
+
+        if en_juego:
+            dibujar_tablero(pantalla, matriz, descubierto, banderas, x_inicio, y_inicio)
+            dibujar_puntaje(pantalla, puntaje)
+            dibujar_boton("Reiniciar", 10, 550, 150, 40, pantalla)
+            dibujar_boton("Volver", 650, 550, 120, 40, pantalla)
+        elif mostrar_niveles:
+            dibujar_boton("Fácil", 150, 100, 200, 50, pantalla)
+            dibujar_boton( "Medio", 150, 200, 200, 50, pantalla)
+            dibujar_boton( "Difícil", 150, 300, 200, 50, pantalla)
+            dibujar_boton( "Volver", 150, 400, 200, 50, pantalla)
+        else:
+            dibujar_boton( "Nivel", 150, 100, 200, 50, pantalla)
+            dibujar_boton( "Jugar", 150, 200, 200, 50, pantalla)
+            dibujar_boton( "Ver Puntajes", 150, 300, 200, 50, pantalla)
+            dibujar_boton( "Salir", 150, 400, 200, 50, pantalla)
+        
+        pygame.display.flip()
+    
+    pygame.quit()
+    sys.exit()
