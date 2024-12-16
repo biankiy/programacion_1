@@ -2,7 +2,7 @@ import pygame
 #_---------------------------- CONFIGURACION DEL JUEGO --------------------------------------
 
 pygame.init()
-ANCHO, ALTO = 800, 600
+ANCHO, ALTO = 1000, 800
 pantalla = pygame.display.set_mode((ANCHO, ALTO))
 pygame.display.set_caption("Bianca_Gimenes_2_parcial")
 iconoMargenSuperior = pygame.image.load("Assets/png-transparent-utn-hd-logo.png")
@@ -15,7 +15,7 @@ imagen_fondo = pygame.transform.scale(imagen_fondo, (ANCHO, ALTO))
 
 pygame.mixer.music.load("Assets/arcade-70780.mp3") 
 pygame.mixer.music.play(-1)
-pygame.mixer.music.set_volume(0.)
+pygame.mixer.music.set_volume(0.3)
 
 COLOR_FONDO = (200, 200, 100)
 COLOR_CUADRO = (150, 150, 150)
