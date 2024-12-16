@@ -1,6 +1,0 @@
-oppopopop: 122
-perro: 54
-elefante: 46
-camara: 42
-hipopotamo: 36
-lampara: 32

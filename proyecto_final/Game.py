@@ -10,7 +10,7 @@ from Config import *
 
 
 '''
-    Este metodo calcula la posicion  del tablero, para lñuego poder centrarlo
+    Este metodo calcula la posicion  del tablero, para luego poder centrarlo
 
     Parámetros:
 
@@ -267,17 +267,15 @@ def pedir_nombre(pantalla):
     Guarda la lista actualizada en el archivo puntajes.json.
 
 '''
-dato = ""
-
 def guardar_puntaje(nick, puntaje):
     if nick != "" and puntaje > 0:
         puntajes = cargar_puntajes()
         puntajes.append({"nick": nick, "puntaje": puntaje})
         puntajes = sorted(puntajes, key=lambda x: x["puntaje"], reverse=True)[:10]
 
-        with open("puntajes.txt", "w") as archivo:
-            for puntaje in puntajes:
-                archivo.write(f"{puntaje['nick']}: {puntaje['puntaje']}\n")
+        with open("puntajes.json", "w") as archivo:
+            json.dump(puntajes, archivo)
+        print("Puntaje guardado exitosamente.")
     
     else:
         print("Nombre o puntaje no válido. No se guardará el puntaje.")
@@ -292,11 +290,9 @@ def guardar_puntaje(nick, puntaje):
 
 '''
 def cargar_puntajes():
-   
         with open("puntajes.json", "r") as archivo:
-            return json.load(archivo)
-    
-
+            puntajes = json.load(archivo)
+            return puntajes
 '''
     Muestra los puntajes guardados en una pantalla de clasificación.
 
@@ -385,7 +381,7 @@ def mostrar_puntajes(pantalla,ancho, alto):
 def verificar_victoria(matriz, descubierto):
     for i in range(len(matriz)):
         for j in range(len(matriz[0])):
-            # Solo chequea si todas las celdas no-mina están descubiertas
+        
             if matriz[i][j] != -1 and not descubierto[i][j]:
                 return False
     return True
@@ -421,11 +417,12 @@ def mostrar_mensaje_victoria(pantalla, ancho, alto):
     pygame.display.flip()
     pygame.time.delay(3000)
 
-
+'''
+    Logica principal del juego, engloba todas las funciones para ejecutar el juego
+'''
 
 def main():
     pygame.init()
-    ANCHO, ALTO = 800, 600
     pantalla = pygame.display.set_mode((ANCHO, ALTO))
     pygame.display.set_caption("Bianca_Gimenes_2_parcial")
     
@@ -472,7 +469,7 @@ def main():
                          en_juego = False
                                         
                 if en_juego:
-                    if 10 <= x <= 100 and 550 <= y <= 590:
+                    if 100 <= x <= 250 and 700 <= y <= 740:
                         guardar_puntaje(nick, puntaje)
                         nick = pedir_nombre(pantalla)
                         config = niveles_config[nivel.upper()]
@@ -485,7 +482,7 @@ def main():
                         puntaje = 0
                         game_over = False
                 
-                    elif 650 <= x <= 750 and 550 <= y <= 590:
+                    elif 800 <= x <= 920 and 700 <= y <= 740:
                         print("Botón 'Volver' presionado")
                         guardar_puntaje(nick, puntaje) 
                         en_juego = False
@@ -507,7 +504,7 @@ def main():
               
                 
                 else:
-                    if 150 <= x <= 350:  # Verifica si el clic está en el rango de botones
+                    if 150 <= x <= 350:
                         if 100 <= y <= 150:  # Botón "Niveles"
                             mostrar_niveles = True
                         elif 200 <= y <= 250:  # Botón "Jugar"
@@ -517,6 +514,7 @@ def main():
                             filas, columnas, minas = config["filas"], config["columnas"], config["minas"]
                             matriz = crear_matriz_aleatoria(filas, columnas, minas)
                             mostrar_matriz(matriz)
+                            print("----------------------------")
                             descubierto = [[False] * columnas for _ in range(filas)]
                             banderas = []
                             puntaje = 0
@@ -531,8 +529,8 @@ def main():
         if en_juego:
             dibujar_tablero(pantalla, matriz, descubierto, banderas, x_inicio, y_inicio)
             dibujar_puntaje(pantalla, puntaje)
-            dibujar_boton("Reiniciar", 10, 550, 150, 40, pantalla)
-            dibujar_boton("Volver", 650, 550, 120, 40, pantalla)
+            dibujar_boton("Reiniciar", 100, 700, 150, 40, pantalla)
+            dibujar_boton("Volver", 800, 700, 120, 40, pantalla)
         elif mostrar_niveles:
             dibujar_boton("Fácil", 150, 100, 200, 50, pantalla)
             dibujar_boton( "Medio", 150, 200, 200, 50, pantalla)
