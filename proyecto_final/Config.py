@@ -2,7 +2,7 @@ import pygame
 #_---------------------------- CONFIGURACION DEL JUEGO --------------------------------------
 
 pygame.init()
-ANCHO, ALTO = 1000, 900
+ANCHO, ALTO = 1000, 800
 pantalla = pygame.display.set_mode((ANCHO, ALTO))
 pygame.display.set_caption("Bianca_Gimenes_2_parcial")
 iconoMargenSuperior = pygame.image.load("Assets/png-transparent-utn-hd-logo.png")
